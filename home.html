@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Password reset</title>
+    </head>
+    <body>
+        <h1>Password reset</h1>
+        <div>
+            <form action="/reset-password" method="post">
+                <div class="old password">
+                    <label>Old Password</label><br>
+                    <input type="password" id="old-password" required maxlength="8"><br>                    
+                </div>
+                <div class="New password">
+                    <label>New Password</label><br>
+                    <input type="password" id="new-password" required maxlength="8"> <br>           
+                </div>
+                <div class="new password">
+                    <label>Confirm New Password</label><br>
+                    <input type="password" id="confirm-password" required maxlength="8"><br>
+                </div>
+
+                <input type="submit" id="submit" value="submit">
+
+            </form>
+            
+
+
+
+        </div>
+
+
+
+
+
+    </body>
+</html>
