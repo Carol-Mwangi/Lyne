@@ -13,6 +13,9 @@ app.get('/page2.html', (req, res) => {
 app.post('/submit-form',(req,res)=>{
     const usernName = req.body.username;
     const password = req.body.password;
+    
+
+    // Store to DB here
 
     if(usernName==='Carolyne' & password==='LyneMwangi') {console.log('Logged in successful')
 } else {
