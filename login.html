@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Login Form</title>
+    </head>
+    <body>
+        <h1>login Form</h1>
+        <form action="/login" method="post">
+            <div class="username">
+             <label for="Username">Username</label><br>
+             <input type="text" id="username" required><br>
+            </div>
+            <div class="pwd">
+             <label for="pwd">Password</label><br>
+             <input type="pwd" id="pwd" required maxlength="8"><br>
+            </div><br>
+            <div class="remember-forget">
+                <input type="checkbox" id="remember-me">
+                <label for="remember-me">Remember Me</label>
+                <a href="/reset">Forgot Password</a>                
+            </div><br>
+            <button type="button" id="button">Login</button>
+
+        </form><br>
+             <a href="/signup">Dont have an account?Sign Up</a>
+
+
+    </body>
+</html>
