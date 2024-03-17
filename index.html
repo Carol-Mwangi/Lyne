@@ -30,7 +30,7 @@
     </style>
     <body>
         <h1>Registration Form</h1>
-            <form action="/submitPageOne" method="post">
+            <form action="submit-Page1" method="post">
             <label for ="fname">First Name</label>
             <input type="text" id="fname" name="fname" required><br><br>
             <label for="lname">Last Name</label>
@@ -38,9 +38,9 @@
             <label for="email">Email</label>
             <input type="email" id="email" name="email"  required><br><br>
             <label for="gender">Select Gender</label><br>
-            <input type="radio" id="gender" name="male" value="Male">
+            <input type="radio" id="male" name="gender" value="Male">
             <label for="gender">Male</label><br>
-            <input type="radio" id="gender" name="Female" value="Male">
+            <input type="radio" id="female" name="gender" value="female">
             <label for="gender">Female</label><br><br>            
             <label for="games">Games intrested in</label><br>
             <input type="checkbox" id="games" name="Hockey" value="Hockey">
@@ -64,16 +64,24 @@
                 <option value="age">25 and Above</option>
             </select><br><br>
             <label for="photo">Select a Photo</label>
-            <input type="file" id="photo" value="photo" required><br><br>           
-            <input type="submit" id="Submit">
-                   
+            <input type="file" id="photo" value="photo" required><br><br> 
+            <label  for="pwd" >Create Password</label><br>
+            <input type="text" id="pwd"><br>
+            <label for="confirm">Confirm Password</label><br>
+            <input type="text" id="confirm"><br>
+            
+            
+
+
+            <input type="submit" id="Submit" value="submit">          
             
 
 
 
 
 
-        </form>
+        </form><br> 
+       
 
 
 
