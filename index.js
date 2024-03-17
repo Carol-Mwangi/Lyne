@@ -1,40 +1,56 @@
-const express=require('express');
-const app=express();
-const port= 3000
-const bodyParser=require('body-parser');
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+const port = 3000;
 
-app.use(bodyParser.urlencoded({extended:true}))
-app.use(express.static('public'));
+// Middleware to parse incoming request bodies
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-app.get('/page2.html', (req, res) => {
-    res.sendFile(__dirname + '/page2.html');
+app.get('/login', (req, res) => {
+    res.sendFile(__dirname + '/login.html');
 });
 
-app.post('/submit-form',(req,res)=>{
-    const usernName = req.body.username;
-    const password = req.body.password;
-    
-
-    // Store to DB here
-
-    if(usernName==='Carolyne' & password==='LyneMwangi') {console.log('Logged in successful')
-} else {
-    console.log(' Invalid Username or incorrect password');
-}
+app.get('/reset', (req,res)=>{
+    res.sendFile(__dirname + '/reset.html')
 });
 
-app.get('/home.html',(req,res)=>{
-    res.sendFile(__dirname + '/home.html')
+app.post('/reset',(req,res)=>{
+    const {oldpassword, newpassword, confirmnewpassword} = req.body
+    res.send('Password reset successful')
+})
+
+app.post('/login', (req, res) => {
+    res.sendFile(__dirname + '/login.html')
 });
 
-app.post('/reset-password',(req,res)=>{
-    const oldPassword = req.body['old-Password'];
-    const newpassword = req.body['new-password'];
-    const confirmnewpassword = req.body['confirm-password']
+app.post('/login',(req,res)=>{
+    const {username, pwd} = req.body
 
-    res.send('Password reset successfully')
+    res.send('login successful')
+
+
+})
+
+app.get('/signup', (req, res) => {
+    res.sendFile(__dirname + '/signup.html');
 });
 
-app.listen(port,()=> {
-    console.log(`listening form port ${port}`)
+
+
+app.post('/signup', (req, res) => {
+    const { fname, lname, email, gender, pwd, confirm } = req.body;
+
+    console.log('First Name:', fname);
+    console.log('Last Name:', lname);
+    console.log('Email:', email);
+    console.log('Gender:', gender);
+    console.log('Password:', pwd);
+    console.log('Confirm Password:', confirm);
+
+    res.send('Signed up successfully');
+});
+
+app.listen(port, () => {
+    console.log(`Listening on port ${port}`);
 });
