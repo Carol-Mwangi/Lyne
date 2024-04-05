@@ -15,8 +15,8 @@ const mongoURI = 'mongodb+srv://carolyne:BgfduSTsMYrXTzWI@lyne.zm3suyw.mongodb.n
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('Connected to MongoDB'))
     .catch(error => console.error('Failed to connect to MongoDB:', error));
-
-const userSchema = new mongoose.Schema({
+ // creating a schema ie the structure of my db data and defining the schema types
+const userSchema = mongoose.Schema({
     firstName: String,
     lastName: String,
     email: String,
@@ -24,52 +24,66 @@ const userSchema = new mongoose.Schema({
     password: String
 });
 
-// Define a Mongoose model based on the schema
-const User = mongoose.model('User', userSchema);
+// Define a Mongoose model 
+const userModel = mongoose.model('User', userSchema);
 
-app.get('/signup', (req, res)=>{
-    res.sendFile(__dirname + '/signup.html')
-})
-
-// Define the route for handling form submission
-app.post('/signup', async (req, res) => {
-    try {
-        // Create a new user instance based on the form data
-        const newUser = new User({
-            firstName: req.body.fname,
-            lastName: req.body.lname,
-            email: req.body.email,
-            gender: req.body.gender,
-            password: req.body.createPassword // Assuming you want to store the password
-        });
-
-        // Save the new user to the database
-        await newUser.save();
-
-        console.log('User signed up:', newUser);
-        // Optionally, you can redirect the user to a success page
-        res.redirect('/login')
-    } catch (error) {
-        console.log('Failed to process signup:', error);
-        // Handle the error appropriately (e.g., render an error page)
-        res.status(500).send('Signup failed. Please try again later.');
+app.get('/save', async (req, res)=>{
+ const newUser = userModel({
+    firstName: 'Carol',
+    lastName: 'Mwangi',
+    email: 'wanguicaroline@gmail.com',
+    gender: 'Female',
+    password: 'Mwangi'
+ });
+  try {
+    const saveUser = await newUser.save();
+       console.log(saveUser, 'New User created');
+        res.send('Created user');
+    } 
+    catch (error) {
+        console.log(error);
+        res.send('error creating the user')
     }
 });
 
-app.get('/login', (req,res)=>{
-    res.sendFile(__dirname + '/login.html')
-})
-
-app.post('/login', (req,res)=>{
-    const {email, password} = req.body
-    if (username === email & password === createPassword) {
-    res.send('login successful')
-    } else {
-        res.send('Incorrect login details')
+// finding a user from my db 
+app.get('/findAll', async (req,res)=>{
+   try {const users = await userModel.find({email: 'carolyne@boyahq.com'});
+       console.log(users);
+        res.send(users)
+    } 
+    catch(error) {
+        console.log(error)
+        res.send('Error Retrieving data')
     }
-})
+   });
 
-// Start the Express server
+//updating the data in the db
+   app.get('/update',async(req,res)=>{
+    try {const updateUser = await userModel.findOneAndUpdate({firstName: 'Carol'}, {email : 'caroline@boya.co'});
+    console.log(updateUser);
+    res.send('User Updated Successfully')       
+
+   }
+   catch(error) {
+    console.log(error)
+    res.send('Trouble Updating the user')
+   }
+});
+
+//deleting the user
+app.get('/delete',async(req,res) =>{
+    try {
+        const deleteUser = await userModel.findOneAndDelete({email: 'lilian@gmail.com'});
+        console.log('deleteUser');
+        res.send(`${deleteUser} successfully deleted`);
+    }
+    catch (err) {
+        console.log(error);
+        res.send('Unable to perfom the operation')
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
