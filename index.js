@@ -1,76 +1,176 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const {MongoClient} = require('mongodb');
+const passport = require('passport');
+const session = require('express-session');
+const passportLocalMongoose = require('passport-local-mongoose');
 const bodyParser = require('body-parser');
 
 const app = express();
 const port = 3000;
 
-
+//using the body parser
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({
+    secret: "long secret key",
+    resave: false,
+    saveUninitialized: false
+}));
+
+//initializing passport and starting a session
+app.use(passport.initialize());
+app.use(passport.session()); //starting a session
+
 
 // MongoDB connection URI
 const mongoURI = 'mongodb+srv://carolyne:BgfduSTsMYrXTzWI@lyne.zm3suyw.mongodb.net/carolyne?retryWrites=true&w=majority&appName=Lyne';
 
-// Connect to MongoDB using Mongoose
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(error => console.error('Failed to connect to MongoDB:', error));
+//connection using mongoclient
+const dbName = 'Carol';
+const collection = 'NewUsers';
 
-const userSchema = new mongoose.Schema({
-    firstName: String,
-    lastName: String,
-    email: String,
-    gender: String,
-    password: String
-});
+ const client = new MongoClient(mongoURI, {useNewUrlParser: true, useUnifiedTopology: true});
 
-// Define a Mongoose model based on the schema
-const User = mongoose.model('User', userSchema);
-
-app.get('/signup', (req, res)=>{
+ //check connection to Mongodb
+ client.connect()
+    .then(() => {
+        console.log('Connected to MongoDB');
+    })
+    .catch(err => {
+        console.error('Error connecting to MongoDB:', err);
+    });
+   
+    
+//creating a user
+app.get('/signup', (req, res)=> {
     res.sendFile(__dirname + '/signup.html')
-})
+});
 
-// Define the route for handling form submission
-app.post('/signup', async (req, res) => {
-    try {
-        // Create a new user instance based on the form data
-        const newUser = new User({
-            firstName: req.body.fname,
-            lastName: req.body.lname,
-            email: req.body.email,
-            gender: req.body.gender,
-            password: req.body.createPassword // Assuming you want to store the password
-        });
+app.post('/signup', async (req, res)=>{
+    try { //extract the user data
+        var firstName = req.body.fname;
+        var lastName = req.body.lname;
+        var email = req.body.email;
+        var gender = req.body.gender;
+        var password = req.body.password;
 
-        // Save the new user to the database
-        await newUser.save();
+        //connect to db
+        await client.connect();
 
-        console.log('User signed up:', newUser);
-        // Optionally, you can redirect the user to a success page
+        //access db and collection
+        const db = client.db('Carol');
+        const collection = db.collection('NewUsers');
+//create ner user account
+        const newUser = {
+            firstName,
+            lastName,
+            email,
+            gender,
+            password
+        }
+       await collection.insertOne(newUser);
         res.redirect('/login')
-    } catch (error) {
-        console.log('Failed to process signup:', error);
-        // Handle the error appropriately (e.g., render an error page)
-        res.status(500).send('Signup failed. Please try again later.');
+        console.log('newUser', newUser);
+    } catch (err){
+        console.error(err);
+        res.send('Error creating the user')
     }
 });
 
-app.get('/login', (req,res)=>{
-    res.sendFile(__dirname + '/login.html')
+app.get('/login',(req, res)=>{
+    res.sendFile(__dirname +'/login.html')
 })
+//find and login
+app.post('/login', async(req,res)=>{
+    try {
+        const {email, password} =req.body
+        await client.connect();
 
-app.post('/login', (req,res)=>{
-    const {email, password} = req.body
-    if (username === email & password === createPassword) {
-    res.send('login successful')
-    } else {
-        res.send('Incorrect login details')
+        const db = client.db('Carol');
+        const collection = db.collection('NewUsers');
+
+        const user = await collection.findOne({email, password});
+
+        if(user) {
+            console.log('login successful')
+            res.send('logged in')
+        } else {
+            res.send('Invalid login details')
+        }
+    } catch(err) {
+        console.error(err);
+        res.send('Error logging in');
     }
-})
+});
+ 
+
+
 
 // Start the Express server
+
+//read operation
+app.get('/users',async(req,res)=>{
+    try {
+        await client.connect();
+
+        const db = client.db('Carol');
+        const collection = db.collection('NewUsers');
+
+        const users = await collection.find({email: 'carolyne@boyahq.com'}).toArray();
+        res.json(users);
+        console.log(users)
+
+    } catch (err) {
+        console.log(err)
+        res.send('Error retrieving users');
+    }
+})
+
+//update user details
+app.get('/reset',(req,res)=>{
+    res.sendFile(__dirname+'/reset.html')
+});
+
+app.post('/reset', async(req,res)=>{
+    try {
+        const {email, password, confirmPassword}=req.body;
+
+        if(password !== confirmPassword) {
+            console.log('password Mismatch');
+            res.send('Password mismatch')
+        }
+
+        await client.connect();
+         const db = client.db('Carol');
+         const collection = db.collection('NewUsers')
+
+         await collection.updateOne({email}, {$set:{password: confirmPassword}});
+         console.log('password reset successfully');
+         res.redirect('/login');
+    } catch (err) {
+        console.error(err);
+        res.send('Error in resetting the password')
+    }
+})
+ app.get('/delete',async(req,res)=>{
+    try {
+        await client.connect();
+        const db = client.db('Carol');
+        const collection = db.collection('NewUsers')
+
+       const deleted = await collection.deleteMany({email:'carolyne@boyahq.com'});
+        console.log (deleted,'User deleted');
+        res.send('User deleted');
+    }  catch (err) {
+        console.log(err);
+        res.send('Trouble deleting the user');
+    }
+ })
+
+
+
+
+
+
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
-
