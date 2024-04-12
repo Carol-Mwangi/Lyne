@@ -8,18 +8,18 @@
         <form action="/login" method="post">
             <div class="username">
              <label for="username">Username</label><br>
-             <input type="email" id="username" name="email" required><br>
+             <input type="email" name="Username" required><br>
             </div>
             <div class="pwd">
              <label for="pwd">Password</label><br>
-             <input type="password" id="pwd" name="password" required maxlength="8"><br>
+             <input type="password" name="password" value="" required maxlength="8"><br>
             </div><br>
             <div class="remember-forget">
                 <input type="checkbox" id="remember-me">
                 <label for="remember-me">Remember Me</label>
                 <a href="/reset">Forgot Password</a>                
             </div><br>
-            <button type="submit" id="button">Login</button>
+            <button type="submit" name="button">Login</button>
 
         </form><br>
              <a href="/signup">Dont have an account?Sign Up</a>
