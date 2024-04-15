@@ -1,9 +1,11 @@
 const express = require('express');
 const {MongoClient} = require('mongodb');
+require('dotenv').config();
 const passport = require('passport');
 const session = require('express-session');
 const passportLocalMongoose = require('passport-local-mongoose');
 const bodyParser = require('body-parser');
+
 
 const app = express();
 const port = 3000;
@@ -22,7 +24,9 @@ app.use(passport.session()); //starting a session
 
 
 // MongoDB connection URI
-const mongoURI = 'mongodb+srv://carolyne:BgfduSTsMYrXTzWI@lyne.zm3suyw.mongodb.net/carolyne?retryWrites=true&w=majority&appName=Lyne';
+const mongoURI = process.env.mongoURI;
+
+console.log(mongoURI)
 
 //connection using mongoclient
 const dbName = 'Carol';
@@ -94,6 +98,7 @@ app.post('/login', async(req,res)=>{
             console.log('login successful')
             res.send('logged in')
         } else {
+            console.log(err)
             res.send('Invalid login details')
         }
     } catch(err) {
@@ -115,7 +120,7 @@ app.get('/users',async(req,res)=>{
         const db = client.db('Carol');
         const collection = db.collection('NewUsers');
 
-        const users = await collection.find({email: 'carolyne@boyahq.com'}).toArray();
+        const users = await collection.find({}).toArray();
         res.json(users);
         console.log(users)
 
