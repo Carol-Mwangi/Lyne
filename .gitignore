@@ -1,8 +1,4 @@
-#ignore
-package.json
 
-#ignore
-package-lock.json
 
 #ignore
 node_modules

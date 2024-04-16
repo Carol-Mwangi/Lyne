@@ -13,7 +13,7 @@ const port = 3000;
 //using the body parser
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
-    secret: "long secret key",
+    secret: "ojnasfaskjjakjasa82882hha-0najany",
     resave: false,
     saveUninitialized: false
 }));
@@ -120,7 +120,7 @@ app.get('/users',async(req,res)=>{
         const db = client.db('Carol');
         const collection = db.collection('NewUsers');
 
-        const users = await collection.find({}).toArray();
+        const users = await collection.findOne({email:'victor@boyahq.com'});
         res.json(users);
         console.log(users)
 
@@ -138,6 +138,7 @@ app.get('/reset',(req,res)=>{
 app.post('/reset', async(req,res)=>{
     try {
         const {email, password, confirmPassword}=req.body;
+        console.log('resetPasswordData',req.body)
 
         if(password !== confirmPassword) {
             console.log('password Mismatch');
@@ -148,8 +149,8 @@ app.post('/reset', async(req,res)=>{
          const db = client.db('Carol');
          const collection = db.collection('NewUsers')
 
-         await collection.updateOne({email}, {$set:{password: confirmPassword}});
-         console.log('password reset successfully');
+         const updated = await collection.updateOne({email}, {$set:{password: confirmPassword}});
+         console.log('password reset successfully',updated);
          res.redirect('/login');
     } catch (err) {
         console.error(err);
