@@ -1,29 +1,14 @@
 const express = require('express');
 const {MongoClient} = require('mongodb');
 require('dotenv').config();
+const bcrypt = require('bcrypt')
 const passport = require('passport');
 const session = require('express-session');
-const passportLocalMongoose = require('passport-local-mongoose');
+const localStrategy = require('passport-local').Strategy;
 const bodyParser = require('body-parser');
-
-
 const app = express();
 const port = 3000;
 
-//using the body parser
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-    secret: "ojnasfaskjjakjasa82882hha-0najany",
-    resave: false,
-    saveUninitialized: false
-}));
-
-//initializing passport and starting a session
-app.use(passport.initialize());
-app.use(passport.session()); //starting a session
-
-
-// MongoDB connection URI
 const mongoURI = process.env.mongoURI;
 
 console.log(mongoURI)
@@ -42,7 +27,70 @@ const collection = 'NewUsers';
     .catch(err => {
         console.error('Error connecting to MongoDB:', err);
     });
-   
+
+    //Setting the bodyParser and passport middleware
+    app.use(bodyParser.urlencoded({ extended: true }));
+    app.use(session({
+        secret: process.env.secret_Key,
+        resave: false,
+        saveUninitialized: false
+    }));
+//initializing the passport and starting a session
+    app.use(passport.initialize());
+    app.use(passport.session()); //starting a session
+//configure passport
+passport.use( new localStrategy( async(username, password)=>{
+    try { const db = client.db('Carol');
+      const connection = db.collection('NewUsers')   
+        
+        //checking the user from the db
+        const user = await collection.findOne({email: 'username'},(err,user) => {
+        if(err) {
+            res.send(err)
+        };
+        if(!user) {
+            res.send('username not found')
+        }
+     const passwordMatch = bcrypt.compare(password , user.password, (err, result) => {
+        if(err) {
+            res.send(err);
+        }
+        if(result) {
+            res.send('login successful')
+        } else {
+            res.send('Incorrect password');
+        }
+    });
+});
+} catch (err) {
+    res.send(error)
+}
+}));
+
+passport.serializeUser((user,done)=>{
+    done(null, user.id)
+})
+
+passport.deserializeUser( async(id, done)=>{
+   try { const db = client.db('Carol');
+         const collection= db.collection('NewUsers');
+
+         const user =  await collection.findone({id: 'id'})
+         if(!user) {
+            return ('User not found')
+         } else {
+            return(user)
+         }
+
+
+    } catch (error) {
+        return done(err)
+    }
+});
+
+       
+        
+                                 
     
 //creating a user
 app.get('/signup', (req, res)=> {
@@ -63,13 +111,15 @@ app.post('/signup', async (req, res)=>{
         //access db and collection
         const db = client.db('Carol');
         const collection = db.collection('NewUsers');
+
+        const hashedPassword = await bcrypt.hash(password, 10)
 //create ner user account
         const newUser = {
             firstName,
             lastName,
             email,
             gender,
-            password
+            password: hashedPassword
         }
        await collection.insertOne(newUser);
         res.redirect('/login')
@@ -83,29 +133,16 @@ app.post('/signup', async (req, res)=>{
 app.get('/login',(req, res)=>{
     res.sendFile(__dirname +'/login.html')
 })
-//find and login
-app.post('/login', async(req,res)=>{
-    try {
-        const {email, password} =req.body
-        await client.connect();
 
-        const db = client.db('Carol');
-        const collection = db.collection('NewUsers');
-
-        const user = await collection.findOne({email, password});
-
-        if(user) {
-            console.log('login successful')
-            res.send('logged in')
-        } else {
-            console.log(err)
-            res.send('Invalid login details')
-        }
-    } catch(err) {
-        console.error(err);
-        res.send('Error logging in');
-    }
+app.get('/profile', (req, res) => {
+    res.sendFile(__dirname + '/profile.html');
 });
+
+//find and login
+app.post('/login', passport.authenticate('local', {
+    successRedirect: '/profile',
+    failureRedirect: '/login',
+}));
  
 
 
@@ -120,7 +157,7 @@ app.get('/users',async(req,res)=>{
         const db = client.db('Carol');
         const collection = db.collection('NewUsers');
 
-        const users = await collection.findOne({email:'victor@boyahq.com'});
+        const users = await collection.find({}).toArray();
         res.json(users);
         console.log(users)
 
@@ -163,7 +200,7 @@ app.post('/reset', async(req,res)=>{
         const db = client.db('Carol');
         const collection = db.collection('NewUsers')
 
-       const deleted = await collection.deleteMany({email:'carolyne@boyahq.com'});
+       const deleted = await collection.deleteMany({firstName:'Carol'});
         console.log (deleted,'User deleted');
         res.send('User deleted');
     }  catch (err) {
