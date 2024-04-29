@@ -4,7 +4,8 @@ require('dotenv').config();
 const bcrypt = require('bcrypt')
 const passport = require('passport');
 const session = require('express-session');
-const localStrategy = require('passport-local').Strategy;
+const initializePassport = require('./passport-config');
+
 const bodyParser = require('body-parser');
 const app = express();
 const port = 3000;
@@ -38,59 +39,17 @@ const collection = 'NewUsers';
 //initializing the passport and starting a session
     app.use(passport.initialize());
     app.use(passport.session()); //starting a session
-//configure passport
-passport.use( new localStrategy( async(username, password)=>{
-    try { const db = client.db('Carol');
-      const connection = db.collection('NewUsers')   
-        
-        //checking the user from the db
-        const user = await collection.findOne({email: 'username'},(err,user) => {
-        if(err) {
-            res.send(err)
-        };
-        if(!user) {
-            res.send('username not found')
-        }
-     const passwordMatch = bcrypt.compare(password , user.password, (err, result) => {
-        if(err) {
-            res.send(err);
-        }
-        if(result) {
-            res.send('login successful')
-        } else {
-            res.send('Incorrect password');
-        }
-    });
-});
-} catch (err) {
-    res.send(error)
-}
-}));
-
-passport.serializeUser((user,done)=>{
-    done(null, user.id)
-})
-
-passport.deserializeUser( async(id, done)=>{
-   try { const db = client.db('Carol');
-         const collection= db.collection('NewUsers');
-
-         const user =  await collection.findone({id: 'id'})
-         if(!user) {
-            return ('User not found')
-         } else {
-            return(user)
+    initializePassport(passport, 
+       async email => {
+        const user =  await client.db('Carol').collection('NewUsers').findOne({ email: email });
+       return user;
+      },
+        async id =>{
+        const user =  await client.db('Carol').collection('NewUsers').findOne({ _id: id });
+        return user;
          }
-
-
-    } catch (error) {
-        return done(err)
-    }
-});
-
-       
-        
-                                 
+           );
+                               
     
 //creating a user
 app.get('/signup', (req, res)=> {
@@ -130,13 +89,15 @@ app.post('/signup', async (req, res)=>{
     }
 });
 
+app.get('/profile', (req, res) => {
+    res.sendFile(__dirname + '/profile.html');
+});
+
 app.get('/login',(req, res)=>{
     res.sendFile(__dirname +'/login.html')
 })
 
-app.get('/profile', (req, res) => {
-    res.sendFile(__dirname + '/profile.html');
-});
+
 
 //find and login
 app.post('/login', passport.authenticate('local', {
@@ -200,7 +161,7 @@ app.post('/reset', async(req,res)=>{
         const db = client.db('Carol');
         const collection = db.collection('NewUsers')
 
-       const deleted = await collection.deleteMany({firstName:'Carol'});
+       const deleted = await collection.deleteMany({});
         console.log (deleted,'User deleted');
         res.send('User deleted');
     }  catch (err) {
