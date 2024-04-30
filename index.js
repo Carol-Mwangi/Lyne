@@ -135,19 +135,21 @@ app.get('/reset',(req,res)=>{
 
 app.post('/reset', async(req,res)=>{
     try {
-        const {email, password, confirmPassword}=req.body;
         console.log('resetPasswordData',req.body)
+        const {email, password, confirmPassword}=req.body;
 
+        
         if(password !== confirmPassword) {
             console.log('password Mismatch');
-            res.send('Password mismatch')
+            return res.send('Password mismatch')
         }
+        const resetPassword = await bcrypt.hash(password, 10)
 
         await client.connect();
          const db = client.db('Carol');
          const collection = db.collection('NewUsers')
 
-         const updated = await collection.updateOne({email}, {$set:{password: confirmPassword}});
+         const updated = await collection.updateOne({email: email}, {$set:{password:resetPassword}});
          console.log('password reset successfully',updated);
          res.redirect('/login');
     } catch (err) {
